@@ -1,4 +1,15 @@
+require('dotenv').config();
+
+const databaseConfig = {
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+};
+
+const jwtSecretKey = process.env.JWT_SECRET_KEY;
+
+const db = require('./database.js');
 const { body, validationResult } = require('express-validator');
+const jwt = require('jsonwebtoken');
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
@@ -7,8 +18,8 @@ const User = require('./models/user'); // Import the user model
 const app = express();
 const port = 3000;
 
-// Middleware for parsing JSON bodies
-app.use(bodyParser.json());
+// Middleware
+app.use(express.json());
 
 // Register User
 app.post('/register',
@@ -26,11 +37,32 @@ app.post('/register',
 
     try {
       const { username, password } = req.body;
-      const hash = await bcrypt.hash(password, 10); // Hash the password
-      User.createUser(username, hash); // Store user
-      res.status(201).send('User created');
+
+      // Check if username already exists
+      const checkUserSql = `SELECT username FROM users WHERE username = ?`;
+      db.get(checkUserSql, [username], async (err, row) => {
+        if (err) {
+          console.error(err.message);
+          return res.status(500).send('Error checking user');
+        }
+        if (row) {
+          return res.status(409).send('Username already exists'); // 409 Conflict
+        }
+
+        // If username does not exist, proceed with registration
+        const hash = await bcrypt.hash(password, 10);
+        const insertSql = `INSERT INTO users (username, hash) VALUES (?, ?)`;
+        db.run(insertSql, [username, hash], function (err) {
+          if (err) {
+            console.error(err.message);
+            return res.status(500).send('Error registering new user');
+          }
+          res.status(201).send(`User created with ID: ${this.lastID}`);
+        });
+      });
     } catch (error) {
-      res.status(500).send('Error registering new user');
+      console.error(error);
+      res.status(500).send('Server error');
     }
   });
 
@@ -50,18 +82,29 @@ app.post('/login',
 
     try {
       const { username, password } = req.body;
-      const user = User.findUser(username);
-
-      if (user && await bcrypt.compare(password, user.hash)) {
-        res.status(200).send('Login successful');
-      } else {
-        res.status(401).send('Invalid credentials');
-      }
+      const sql = `SELECT * FROM users WHERE username = ?`;
+      db.get(sql, [username], async (err, user) => {
+        if (err) {
+          return res.status(500).send('Error logging in');
+        }
+        if (user && await bcrypt.compare(password, user.hash)) {
+          const token = jwt.sign({ username: user.username }, jwtSecretKey, { expiresIn: '1h' });
+          res.json({ token });
+        } else {
+          res.status(401).send('Invalid credentials');
+        }
+      });
     } catch (error) {
+      console.error(error);
       res.status(500).send('Error logging in');
     }
   });
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
 });
