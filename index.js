@@ -1,25 +1,33 @@
 require('dotenv').config();
 
-const databaseConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-};
-
 const jwtSecretKey = process.env.JWT_SECRET_KEY;
 
 const db = require('./database.js');
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const express = require('express');
-const bodyParser = require('body-parser');
+app.use(express.json());
 const bcrypt = require('bcrypt');
 const User = require('./models/user'); // Import the user model
 
-const app = express();
-const port = 3000;
+
+
+app.get('/', (req, res) => {
+  res.send('Welcome to the Habit Tracker API!');
+});
+
+app.get('/dashboard', (req, res) => {
+  if (!req.query.username) {
+    return res.status(400).send('Username is required');
+  }
+  res.send(`<h1>${req.query.username}'s Dashboard</h1>`);
+});
 
 // Middleware
+const app = express();
+const port = process.env.PORT
 app.use(express.json());
+app.use(express.static('public'));
 
 // Register User
 app.post('/register',
