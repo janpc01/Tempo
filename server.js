@@ -1,7 +1,8 @@
 import express from "express";
 import session from 'express-session';
 import { User } from './models/user.js';
-import { createDbConnection } from './utils/db_ops.js';
+import { Habit } from './models/habit.js';
+import { createDbConnection, createUserTable, createDaysTable, createHabitTable } from './utils/db_ops.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -10,8 +11,19 @@ dotenv.config();
 const app = express();
 const port = 3001;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// set up tables
 const db = createDbConnection();
+
+// set the view engine to ejs
+app.set('view engine', 'ejs');
+
+// set up models
 const user = new User(db);
+const habit = new Habit(db);
+createUserTable(db);
+createHabitTable(db);
+createDaysTable(db);
 
 app.use(session({
     secret: process.env.API_KEY,
@@ -37,8 +49,6 @@ function requireLogin(req, res, next) {
     }
 }
 
-
-
 // Home Page
 app.get('/', requireLogin, (req, res) => {
     // This route will not be reached because the middleware will redirect based on login status
@@ -46,13 +56,16 @@ app.get('/', requireLogin, (req, res) => {
 
 // Dashboard
 app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'pages/dashboard.html'));
+    var habits = habit.fetchHabits(req.session.userId);
+    res.render('pages/dashboard', { habits: habits });
 });
 
+// Sign up
 app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, 'pages/register.html'));
 });
 
+// POST for registering
 app.post('/register', async (req, res) => {
     const { email, password } = req.body;
     const result = await user.register(email, password);
@@ -64,7 +77,7 @@ app.post('/register', async (req, res) => {
   });
 
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'pages/login.html'));
+    res.render('pages/login');
 });
 
 app.post('/login', async (req, res) => {
@@ -75,7 +88,7 @@ app.post('/login', async (req, res) => {
     } else {
       res.redirect('/login');
     }
-  });
+});
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

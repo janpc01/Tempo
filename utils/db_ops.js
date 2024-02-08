@@ -26,31 +26,61 @@ function createUserTable(db) {
             console.log('Users table created successfully.');
           }
         });
-      });
+    });
 }
 
-// delete record
+function createHabitTable(db) {
+    // Create a table for habits
+    db.serialize(() => {
+        db.run(`CREATE TABLE IF NOT EXISTS habits (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                habit_name TEXT,
+                current_streak INTEGER,
+                longest_streak INTEGER,
+                FOREIGN KEY(user_id) REFERENCES users(id)
+                )`, (err) => {
+        if (err) {
+            console.error('Error creating habits table:', err.message);
+        } else {
+            console.log('Habits table created successfully.');
+        }
+        });
+    });
+}
 
+function createDaysTable(db) {
+    // Create a table for each day
+    db.serialize(() => {
+        db.run(`CREATE TABLE IF NOT EXISTS days (
+                day_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date DATE,
+                habit_id INTEGER,
+                completed BOOLEAN,
+                FOREIGN KEY(habit_id) REFERENCES habits(id)
+                )`, (err) => {
+        if (err) {
+            console.error('Error creating days table:', err.message);
+        } else {
+            console.log('Days table created successfully.');
+        }
+        });
+    });
+}
 
-// insert record
-
-
-// select all records
-
-
-// select record by id
-
-
-// update record
-
+function wipeData(db) {
+    db.serialize(() => {
+        db.run(`DROP TABLE IF EXISTS users`);
+        db.run(`DROP TABLE IF EXISTS habits`);
+        db.run(`DROP TABLE IF EXISTS days`);
+    });
+}
 
 // export functions
 export {
     createDbConnection,
     createUserTable,
-    // deleteRecord,
-    // insertRecord,
-    // selectAllRecords,
-    // selectRecordById,
-    // update
+    createHabitTable,
+    createDaysTable,
+    wipeData
 }
