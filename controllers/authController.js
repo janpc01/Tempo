@@ -1,29 +1,40 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import sqlite3 from 'sqlite3';
 import dotenv from 'dotenv';
+import User from '../models/user.js';
 
 dotenv.config();
 
-// Connect to SQLite database
-const db = new sqlite3.Database('./database.db');
-
 // Controller functions
 const authController = {
+    getHome: (req, res) => {
+        const token = req.cookies.jwt;
+        if (!token) {
+            return res.redirect('/login');
+        }
+        jwt.verify(token, process.env.API_KEY, (err, decoded) => {
+            if (err) {
+                console.log('Invalid token');
+                return res.redirect('/login');
+            }
+            req.user = decoded;
+            res.redirect('/dashboard');
+        });
+    },
     getLogin: (req, res) => {
         res.render('login');
     },
     postLogin: (req, res) => {
         const { username, password } = req.body;
         // Find user by username in the database
-        db.get('SELECT * FROM users WHERE username = ?', [username], (err, row) => {
+        User.findByUsername(username, (err, row) => {
             if (err || !row || !bcrypt.compareSync(password, row.password)) {
                 return res.status(401).send('Invalid username or password');
             }
             const user = { id: row.id, username: row.username };
             const token = generateToken(user);
             res.cookie('jwt', token, { httpOnly: true });
-            res.redirect('/home');
+            res.redirect('/dashboard');
         });
     },
     getRegister: (req, res) => {
@@ -34,20 +45,19 @@ const authController = {
         // Hash password
         const hashedPassword = bcrypt.hashSync(password, 10);
         // Insert new user into the database
-        db.run('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, hashedPassword], function(err) {
+        User.createNewUser(username, email, hashedPassword, (err, userId) => {
             if (err) {
                 return res.status(400).send('Error registering user');
             }
-            const user = { id: this.lastID, username, email, password: hashedPassword };
+            const user = { id: userId, username, email, password: hashedPassword };
             const token = generateToken(user);
             res.cookie('jwt', token, { httpOnly: true });
-            res.redirect('/home');
+            res.redirect('/dashboard');
         });
     },
     ensureAuthenticated: (req, res, next) => {
         const token = req.cookies.jwt;
         if (!token) {
-            console.log('No token');
             return res.redirect('/login');
         }
         jwt.verify(token, process.env.API_KEY, (err, decoded) => {
@@ -59,8 +69,9 @@ const authController = {
             next();
         });
     },
-    getHome: (req, res) => {
-        res.render('home', { username: req.user.username });
+    getLogout: (req, res) => {
+        res.clearCookie('jwt');
+        res.redirect('/login');
     }
 };
 

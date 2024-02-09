@@ -14,14 +14,14 @@ const User = {
             return callback(null, row);
         });
     },
-    findById: (id, callback) => {
-        db.get('SELECT * FROM users WHERE id = ?', [id], (err, row) => {
+    createNewUser: (username, email, password, callback) => {
+        db.run('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, password], function(err) {
             if (err) {
                 return callback(err, null);
             }
-            return callback(null, row);
+            return callback(null, this.lastID);
         });
     }
 };
 
-module.exports = User;
+export default User;
