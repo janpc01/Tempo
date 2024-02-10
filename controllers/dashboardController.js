@@ -2,8 +2,10 @@
 
 // Controller functions
 const dashboardController = {
-    getDashboard: (req, res) => {
-        res.render('dashboard', { username: req.user.username });
+    getDashboards: (req, res) => {
+        res.render('dashboard', { 
+            user: req.user,
+        });
     }
 };
 
