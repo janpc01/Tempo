@@ -4,8 +4,16 @@ import sqlite3 from 'sqlite3';
 // Connect to SQLite database
 const db = new sqlite3.Database('./database.db');
 
-// Dashboard model
-const Dashboard = {
+class Dashboard {
+    constructor(userId, name) {
+        this.userId = userId;
+        this.name = name;
+        this.habits = Hab;
+    }
+}
+
+// Dashboard ops
+const DashboardOps = {
     getDashboardsByUserId: (userId, callback) => {
         db.all('SELECT * FROM dashboards WHERE user_id = ?', [userId], (err, rows) => {
             if (err) {
@@ -64,4 +72,4 @@ const Dashboard = {
     },
 };
 
-export default Dashboard;
+export default DashboardOps;

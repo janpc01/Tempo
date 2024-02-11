@@ -4,8 +4,16 @@ import sqlite3 from 'sqlite3';
 // Connect to SQLite database
 const db = new sqlite3.Database('./database.db');
 
+class Day {
+    constructor(habitId, day, completed) {
+        this.habitId = habitId;
+        this.day = day;
+        this.completed = completed;
+    }
+}
+
 // Day model
-const Day = {
+const DayOps = {
     createToday: (habitId, callback) => {
         const date = new Date().toISOString().slice(0, 10);
         db.run('INSERT INTO days (habit_id, day, completed) VALUES (?, ?, 0)', [habitId, date], function(err) {
@@ -43,4 +51,4 @@ const Day = {
     },
 };
 
-export default Day;
+export { Day, DayOps };

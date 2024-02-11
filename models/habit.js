@@ -1,12 +1,22 @@
 // Habit.js
 import sqlite3 from 'sqlite3';
-import Day from './day.js';
+import DayOps from './day.js';
 
 // Connect to SQLite database
 const db = new sqlite3.Database('./database.db');
 
-// Habit model
-const Habit = {
+class Habit {
+    constructor(userId, name, currentStreak, longestStreak) {
+        this.userId = userId;
+        this.name = name;
+        this.currentStreak = currentStreak;
+        this.longestStreak = longestStreak;
+        this.days = DayOps.getDaysByHabitId;
+    }
+}
+
+// Habit ops
+const HabitOps = {
     createNewHabit: (userId, name, callback) => {
         db.run(
             'INSERT INTO habits (user_id, name, current_streak, longest_streak) VALUES (?, ?, 0, 0)', 
@@ -47,7 +57,7 @@ const Habit = {
             if (err) {
                 return callback(err);
             }
-            Day.deleteHabitDays(habitId, (err) => {
+            DayOps.deleteHabitDays(habitId, (err) => {
                 if (err) {
                     return callback(err);
                 }
@@ -58,4 +68,4 @@ const Habit = {
     },
 };
 
-export default Habit;
+export { Habit, HabitOps };

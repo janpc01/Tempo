@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import User from '../models/user.js';
+import UserOps from '../models/user.js';
 
 dotenv.config();
 
@@ -27,7 +27,7 @@ const authController = {
     postLogin: (req, res) => {
         const { username, password } = req.body;
         // Find user by username in the database
-        User.findByUsername(username, (err, row) => {
+        UserOps.findByUsername(username, (err, row) => {
             if (err || !row || !bcrypt.compareSync(password, row.password)) {
                 return res.status(401).send('Invalid username or password');
             }
@@ -45,7 +45,7 @@ const authController = {
         // Hash password
         const hashedPassword = bcrypt.hashSync(password, 10);
         // Insert new user into the database
-        User.createNewUser(username, email, hashedPassword, (err, userId) => {
+        UserOps.createNewUser(username, email, hashedPassword, (err, userId) => {
             if (err) {
                 return res.status(400).send('Error registering user');
             }
