@@ -1,12 +1,67 @@
 // Habit.js
 import sqlite3 from 'sqlite3';
-import Day from './day.js';
+import { Day, DayOps } from './day.js';
 
 // Connect to SQLite database
 const db = new sqlite3.Database('./database.db');
 
-// Habit model
-const Habit = {
+class Habit {
+    constructor(id, userId, name, currentStreak, longestStreak) {
+        this.id = id;
+        this.userId = userId;
+        this.name = name;
+        this.currentStreak = currentStreak;
+        this.longestStreak = longestStreak;
+        this.days = [];
+    }
+
+    async load() {
+        try {
+            this.days = await this.generateDays();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    generateDays() {
+        return new Promise((resolve, reject) => {
+            var daysArr = [];
+            DayOps.getDaysByHabitId(this.id, (err, days) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    days.forEach((day) => {
+                        daysArr.push(new Day(day.id, day.date, day.completed));
+                    });
+                    resolve(daysArr);
+                }
+            });
+        });
+    }
+    
+    getDays() {
+        return this.days;
+    }
+
+    getId() {
+        return this.id;
+    }
+
+    getName() {
+        return this.name;
+    }
+
+    getCurrentStreak() {
+        return this.currentStreak;
+    }
+
+    getLongestStreak() {
+        return this.longestStreak;
+    }
+}
+
+// Habit ops
+const HabitOps = {
     createNewHabit: (userId, name, callback) => {
         db.run(
             'INSERT INTO habits (user_id, name, current_streak, longest_streak) VALUES (?, ?, 0, 0)', 
@@ -34,6 +89,17 @@ const Habit = {
             return callback(null, row);
         });
     },
+    getHabitsByDashboardId: (dashboardId, callback) => {
+        db.all(
+            'SELECT * FROM habits WHERE id IN (SELECT habit_id FROM dashboard_habits WHERE dashboard_id = ?)', 
+            [dashboardId], 
+            (err, rows) => {
+                if (err) {
+                    return callback(err, null);
+                }
+                return callback(null, rows);
+        });
+    },
     changeHabitName: (habitId, newName, callback) => {
         db.run('UPDATE habits SET name = ? WHERE id = ?', [newName, habitId], function(err) {
             if (err) {
@@ -47,7 +113,7 @@ const Habit = {
             if (err) {
                 return callback(err);
             }
-            Day.deleteHabitDays(habitId, (err) => {
+            DayOps.deleteHabitDays(habitId, (err) => {
                 if (err) {
                     return callback(err);
                 }
@@ -58,4 +124,4 @@ const Habit = {
     },
 };
 
-export default Habit;
+export { Habit, HabitOps };
