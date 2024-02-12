@@ -1,17 +1,62 @@
 // Habit.js
 import sqlite3 from 'sqlite3';
-import DayOps from './day.js';
+import { Day, DayOps } from './day.js';
 
 // Connect to SQLite database
 const db = new sqlite3.Database('./database.db');
 
 class Habit {
-    constructor(userId, name, currentStreak, longestStreak) {
+    constructor(id, userId, name, currentStreak, longestStreak) {
+        this.id = id;
         this.userId = userId;
         this.name = name;
         this.currentStreak = currentStreak;
         this.longestStreak = longestStreak;
-        this.days = DayOps.getDaysByHabitId;
+        this.days = [];
+    }
+
+    async load() {
+        try {
+            this.days = await this.generateDays();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    generateDays() {
+        return new Promise((resolve, reject) => {
+            var daysArr = [];
+            DayOps.getDaysByHabitId(this.id, (err, days) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    days.forEach((day) => {
+                        daysArr.push(new Day(day.id, day.date, day.completed));
+                    });
+                    resolve(daysArr);
+                }
+            });
+        });
+    }
+    
+    getDays() {
+        return this.days;
+    }
+
+    getId() {
+        return this.id;
+    }
+
+    getName() {
+        return this.name;
+    }
+
+    getCurrentStreak() {
+        return this.currentStreak;
+    }
+
+    getLongestStreak() {
+        return this.longestStreak;
     }
 }
 
@@ -42,6 +87,17 @@ const HabitOps = {
                 return callback(err, null);
             }
             return callback(null, row);
+        });
+    },
+    getHabitsByDashboardId: (dashboardId, callback) => {
+        db.all(
+            'SELECT * FROM habits WHERE id IN (SELECT habit_id FROM dashboard_habits WHERE dashboard_id = ?)', 
+            [dashboardId], 
+            (err, rows) => {
+                if (err) {
+                    return callback(err, null);
+                }
+                return callback(null, rows);
         });
     },
     changeHabitName: (habitId, newName, callback) => {
