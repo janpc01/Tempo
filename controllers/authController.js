@@ -18,7 +18,7 @@ const authController = {
                 return res.redirect('/login');
             }
             req.user = decoded;
-            res.redirect('/dashboard');
+            res.redirect(`/${req.user.username}`);
         });
     },
     getLogin: (req, res) => {
@@ -34,7 +34,7 @@ const authController = {
             const user = { id: row.id, username: row.username };
             const token = generateToken(user);
             res.cookie('jwt', token, { httpOnly: true });
-            res.redirect('/dashboard');
+            res.redirect(`/${req.user.username}`);
         });
     },
     getRegister: (req, res) => {
@@ -52,7 +52,7 @@ const authController = {
             const user = { id: userId, username, email, password: hashedPassword };
             const token = generateToken(user);
             res.cookie('jwt', token, { httpOnly: true });
-            res.redirect('/dashboard');
+            res.redirect(`/${req.user.username}`);
         });
     },
     ensureAuthenticated: (req, res, next) => {
@@ -71,7 +71,7 @@ const authController = {
     },
     getLogout: (req, res) => {
         res.clearCookie('jwt');
-        res.redirect('/login');
+        getLogin();
     }
 };
 

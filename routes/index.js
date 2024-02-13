@@ -16,7 +16,7 @@ router.get('/register', authController.getRegister);
 router.post('/register', authController.postRegister);
 
 // Dashboard Route
-router.get('/dashboard', authController.ensureAuthenticated, dashboardController.getDashboards);
+router.get('/:username', authController.ensureAuthenticated, dashboardController.getDashboards);
 
 // Logout Route
 router.get('/logout', authController.getLogout);
