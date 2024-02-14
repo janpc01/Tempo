@@ -34,7 +34,7 @@ const authController = {
             const user = { id: row.id, username: row.username };
             const token = generateToken(user);
             res.cookie('jwt', token, { httpOnly: true });
-            res.redirect(`/${req.user.username}`);
+            res.redirect(`/${username}`);
         });
     },
     getRegister: (req, res) => {
@@ -52,7 +52,7 @@ const authController = {
             const user = { id: userId, username, email, password: hashedPassword };
             const token = generateToken(user);
             res.cookie('jwt', token, { httpOnly: true });
-            res.redirect(`/${req.user.username}`);
+            res.redirect(`/${username}`);
         });
     },
     ensureAuthenticated: (req, res, next) => {
@@ -69,9 +69,9 @@ const authController = {
             next();
         });
     },
-    getLogout: (req, res) => {
+    getLogout: (req, res) => { 
         res.clearCookie('jwt');
-        getLogin();
+        res.render('logout');
     }
 };
 

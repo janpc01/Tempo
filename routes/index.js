@@ -15,10 +15,11 @@ router.post('/login', authController.postLogin);
 router.get('/register', authController.getRegister);
 router.post('/register', authController.postRegister);
 
+// Logout Route
+router.get('/logout', authController.getLogout);
+
 // Dashboard Route
 router.get('/:username', authController.ensureAuthenticated, dashboardController.getDashboards);
 
-// Logout Route
-router.get('/logout', authController.getLogout);
 
 export default router;
