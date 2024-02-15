@@ -48,6 +48,17 @@ class Dashboard {
     getName() {
         return this.name;
     }
+
+    getHabit(habitName) {
+        for (var i = 0; i < this.habits.length; i++) {
+            if (this.habits[i].getName() === habitName) {
+                return this.habits[i];
+            }
+        }
+        return null;
+    }
+
+    
 }
 
 // Dashboard ops

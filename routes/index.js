@@ -4,8 +4,8 @@ import dashboardController from '../controllers/dashboardController.js';
 
 const router = express.Router();
 
-// Home Route
-router.get('/', authController.getHome);
+// Root Route
+router.get('/', authController.getRoot);
 
 // Login Route
 router.get('/login', authController.getLogin);
@@ -18,8 +18,13 @@ router.post('/register', authController.postRegister);
 // Logout Route
 router.get('/logout', authController.getLogout);
 
-// Dashboard Route
-router.get('/:username', authController.ensureAuthenticated, dashboardController.getDashboards);
+// Home Route
+router.get('/:username', authController.ensureAuthenticated, dashboardController.getHome);
 
+// Dashboard Route
+router.get('/:username/:dashboard', authController.ensureAuthenticated, dashboardController.getDashboard);
+
+// Habit Route
+router.get('/:username/:dashboard/:habit', authController.ensureAuthenticated, dashboardController.getHabit);
 
 export default router;

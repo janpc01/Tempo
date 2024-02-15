@@ -7,7 +7,7 @@ dotenv.config();
 
 // Controller functions
 const authController = {
-    getHome: (req, res) => {
+    getRoot: (req, res) => {
         const token = req.cookies.jwt;
         if (!token) {
             return res.redirect('/login');

@@ -42,8 +42,23 @@ class User {
         return this.dashboards;
     }
 
-    getUsername() {
-        return this.username;
+    getDashboardsByName() {
+        return this.dashboards.map((dashboard) => {
+            dashboard.getName();
+        });
+    }
+
+    getDashboard(dashboardName) {
+        for (var i = 0; i < this.dashboards.length; i++) {
+            if (this.dashboards[i].getName() === dashboardName) {
+                return this.dashboards[i];
+            }
+        }
+        return null;
+    }
+
+    setLoaded() {
+        this.loaded = true;
     }
 
     isLoaded() {

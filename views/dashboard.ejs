@@ -5,29 +5,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title><%= dashboard.getName() %></title>
 </head>
 <body>
-    <h1>Welcome <%= userObj.username %></h1>
-    <p>This is your dashboard</p>
+    <h1><%= dashboard.getName() %></h1>
     <!-- List Dashboards -->
     <ul>
-        <% userObj.getDashboards().forEach(dashboard => { %>
-            <li><%= dashboard.getName() %>
-                <ul>
-                    <% dashboard.getHabits().forEach(habit => { %>
-                        <li><%= habit.getId() %>: <%= habit.getName() %>
-                            <ul>
-                                <% habit.getDays().forEach(day => { %>
-                                    <li><%= day.getDay() %>: <%= day.getCompleted() %></li>
-                                <% }); %>
-                            </ul>
-                        </li>
-                    <% }); %>
+        <% dashboard.getHabits().forEach(habit => { %>
+            <li>
+                <a href="/<%= authUser.username %>/<%= dashboard.getName() %>/<%= habit.getName() %>"><%= habit.getName() %></a>
             </li>
         <% }); %>
     </ul>
-
-    <a href="/logout">Logout</a>
 </body>
 </html>

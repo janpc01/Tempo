@@ -1,0 +1,33 @@
+<!-- home.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Welcome <%= authUser.username %></h1>
+    <p>These are your dashboards</p>
+    <!-- List Dashboards -->
+    <ul>
+        <% userObj.getDashboards().forEach(dashboard => { %>
+            <li><%= dashboard.getName() %>
+                <ul>
+                    <% dashboard.getHabits().forEach(habit => { %>
+                        <li><%= habit.getId() %>: <%= habit.getName() %>
+                            <ul>
+                                <% habit.getDays().forEach(day => { %>
+                                    <li><%= day.getDay() %>: <%= day.getCompleted() %></li>
+                                <% }); %>
+                            </ul>
+                        </li>
+                    <% }); %>
+            </li>
+        <% }); %>
+    </ul>
+
+    <a href="/logout">Logout</a>
+</body>
+</html>
