@@ -40,13 +40,16 @@ class Dashboard {
         });
     }
     
-
     getHabits() {
         return this.habits;
     }
 
     getName() {
         return this.name;
+    }
+
+    getId() {
+        return this.id;
     }
 
     getHabit(habitName) {
@@ -57,8 +60,6 @@ class Dashboard {
         }
         return null;
     }
-
-    
 }
 
 // Dashboard ops

@@ -9,6 +9,7 @@
 </head>
 <body>
     <h1><%= dashboard.getName() %></h1>
+    <a href="/<%= authUser.username %>/<%= dashboard.getName() %>/edit">Edit</a>
     <!-- List Dashboards -->
     <ul>
         <% dashboard.getHabits().forEach(habit => { %>
@@ -16,6 +17,18 @@
                 <a href="/<%= authUser.username %>/<%= dashboard.getName() %>/<%= habit.getName() %>"><%= habit.getName() %></a>
             </li>
         <% }); %>
+    </ul>
+
+    <h3>Your Other Dashboards</h3>
+    <ul>
+        <% allDashboards.forEach(dashboard => { %>
+            <li>
+                <a href="/<%= authUser.username %>/<%= dashboard %>"><%= dashboard %></a>
+            </li>
+        <% }); %>
+        <li>
+            <a href="/<%= authUser.username %>/dashboard/new">Create a New Dashboard</a>
+        </li>
     </ul>
 </body>
 </html>
